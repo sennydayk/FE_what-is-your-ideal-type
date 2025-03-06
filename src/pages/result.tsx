@@ -210,6 +210,7 @@ const Result = () => {
       };
     } catch (error) {
       console.error('Error downloading the image: ', error);
+      alert('이미지 다운로드에 실패했습니다. 다시 시도해주세요.');
     }
   };
 
