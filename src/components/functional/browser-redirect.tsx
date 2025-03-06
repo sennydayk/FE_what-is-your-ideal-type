@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-const BrowserRedirect = () => {
+const BrowserRedirect: React.FC = () => {
   useEffect(() => {
     const userAgent = navigator.userAgent.toLowerCase();
     const currentUrl = window.location.href;
@@ -65,9 +65,6 @@ const BrowserRedirect = () => {
       redirectToExternalBrowser();
       return;
     }
-
-    // 기타 인앱 브라우저
-    window.location.href = currentUrl;
   }, []);
 
   return null;
