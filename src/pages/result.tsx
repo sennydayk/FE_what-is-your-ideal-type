@@ -19,6 +19,7 @@ import { COOKIE_NAMES, setCookie } from '../components/utils/cookies';
 import { Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getGuestMode } from '../components/utils/session-storage';
+import { useNickname } from '../hooks/use-nickname';
 
 interface ProfileTypes {
   name: string;
@@ -44,6 +45,7 @@ interface PostData {
 const Result = () => {
   const { postId } = useParams();
   const location = useLocation();
+  const { nickname, loading } = useNickname();
   const {
     tempImageUrl,
     profile: initialProfile,
@@ -249,7 +251,10 @@ const Result = () => {
         <Text fontSize='xl' className='py-4'>
           AI 이상형 생성 결과...
         </Text>
-        <Text>당신의 AI 이상형은 {profile?.occupation}입니다!</Text>
+        <Text>
+          {!loading && nickname ? `${nickname}님의 ` : '당신의 '}AI 이상형은{' '}
+          {profile?.occupation}입니다!
+        </Text>
       </FlexBox>
       <Main isResponsive={true}>
         <PreventDefaultWrapper>
