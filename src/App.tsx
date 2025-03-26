@@ -13,6 +13,7 @@ import { LandingRoute } from './components/functional/landing-route';
 import { CookiesProvider } from 'react-cookie';
 import BrowserRedirect from './components/functional/browser-redirect';
 import ScrollToTop from './services/scroll-to-top';
+import Footer from './components/ui/footer';
 
 const Generate = lazy(() => import('./pages/generate'));
 const MyPage = lazy(() => import('./pages/mypage'));
@@ -84,6 +85,7 @@ const App = () => {
                 ))}
               </Routes>
             </Router>
+            <Footer />
           </ErrorBoundary>
         </AuthProvider>
       </QueryClientProvider>

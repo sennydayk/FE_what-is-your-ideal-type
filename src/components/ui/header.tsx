@@ -17,7 +17,7 @@ export const Header = () => {
     if (confirmation) {
       try {
         await signOut(auth);
-        setGuestMode(true)
+        setGuestMode(true);
         navigate('/');
       } catch (error) {
         console.error('Logout failed', error);
@@ -27,11 +27,11 @@ export const Header = () => {
 
   return (
     <header className='w-full flex justify-between items-center py-5 px-12'>
-
-      <Text fontSize='md' desktopFontSize='lg'>
-
-        👩‍❤️‍👨 AI 이상형 찾기
-      </Text>
+      <Link to='/'>
+        <Text fontSize='md' desktopFontSize='lg'>
+          👩‍❤️‍👨 AI 이상형 찾기
+        </Text>
+      </Link>
       <FlexBox className='items-center'>
         {currentUser ? (
           <>
