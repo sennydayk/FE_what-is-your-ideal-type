@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/auth-context';
 import Picture from '../components/ui/picture';
 import Kakaoshare from '../components/functional/kakao-share';
-import NavigateToSurvey from '../components/functional/navigate-to-survey-props';
+import NavigateToSurvey from '../components/functional/navigate-to-survey';
 import { PreventDefaultWrapper } from '../components/functional/prevent-default-wrapper';
 import { Button } from '../components/ui/button/button';
 import { Text } from '../components/ui/text';
@@ -59,8 +59,7 @@ const Result = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
 
-  const isGuest = getGuestMode();
-  const collection = isGuest ? 'anonymous_posts' : 'posts';
+  const isGuest = getGuestMode()
 
   const MotionLoader = motion.create(Loader2);
 
@@ -69,9 +68,10 @@ const Result = () => {
       if (!postId) return;
 
       try {
-        const postRef = doc(db, collection, postId);
-        const postDoc = await getDoc(postRef);
-
+        // posts 컬렉션 먼저 확인
+        let postRef = doc(db, 'posts', postId);
+        let postDoc = await getDoc(postRef);
+        
         if (postDoc.exists()) {
           const data = postDoc.data();
           setImageUrl(data.imageUrl);
@@ -80,21 +80,39 @@ const Result = () => {
               ? JSON.parse(data.profile)
               : data.profile,
           );
+          return;
+        }
+
+        // posts에 없으면 anonymous_posts 확인
+        if (!postDoc.exists()) {
+          postRef = doc(db, 'anonymous_posts', postId);
+          postDoc = await getDoc(postRef);
+          return;
+        } 
+        
+
+        const savedData = localStorage.getItem(`result_${postId}`);
+        if (savedData) {
+          const parsedData = JSON.parse(savedData);
+          setImageUrl(parsedData.tempImageUrl);
+          setProfile(parsedData.profile);
+        } else {
+          setError('데이터를 찾을 수 없습니다.');
         }
       } catch (error) {
         console.error('게시물 데이터 로딩 실패:', error);
         setError('데이터를 불러오는데 실패했습니다.');
       }
     },
-    [collection],
+    [],  
   );
 
   // 초기 데이터 가져오기
   useEffect(() => {
-    if (!location.state && postId) {
+    if (postId) {
       fetchPostData(postId);
     }
-  }, [location.state, postId, fetchPostData]);
+  }, [postId, fetchPostData]);
 
   // 백그라운드 작업
   useEffect(() => {
@@ -104,11 +122,12 @@ const Result = () => {
 
       try {
         const actualPostId = postId;
-        const collection = isGuest ? 'anonymous_posts' : 'posts';
 
-        // 이미 저장된 데이터인지 확인
-        const existingDoc = await getDoc(doc(db, collection, actualPostId));
-        if (existingDoc.exists()) {
+        const postsDoc = await getDoc(doc(db, 'posts', actualPostId));
+        const anonymousDoc = await getDoc(doc(db, 'anonymous_posts', actualPostId));
+
+        // 이미 저장된 데이터라면 early return
+        if (postsDoc.exists() || anonymousDoc.exists()) {
           setIsLoading(false);
           return;
         }
@@ -136,7 +155,10 @@ const Result = () => {
           email: currentUser?.email || null,
         };
 
-        await setDoc(doc(db, collection, actualPostId), postData);
+        // 컬렉션 결정
+        const collectionToUse = isGuest ? 'anonymous_posts' : 'posts';
+        await setDoc(doc(db, collectionToUse, actualPostId), postData);
+        console.log('데이터 저장 완료:', { postId: actualPostId, collection: collectionToUse });
 
         // 게스트 모드인 경우 쿠키에 postId 저장
         if (isGuest) {
