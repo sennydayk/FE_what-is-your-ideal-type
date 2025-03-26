@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../contexts/auth-context';
 import { Navigate, useNavigate } from 'react-router-dom';
-import NavigateToSurvey from '../components/functional/navigate-to-survey-props';
+import NavigateToSurvey from '../components/functional/navigate-to-survey';
 import { Text } from '../components/ui/text';
 import { FlexBox } from '../components/ui/flexbox';
 import { GridBox } from '../components/ui/gridbox';
@@ -33,7 +33,7 @@ const MyPage = () => {
     isLoading: isUserDataLoading,
     error: userDataError,
   } = useQuery({
-    queryKey: ['userData', currentUser?.uid],
+    queryKey: ['userData', currentUser?.uid, currentUser],
     queryFn: () => fetchUserData(currentUser as User),
     enabled: !!currentUser,
   });
@@ -45,7 +45,7 @@ const MyPage = () => {
     hasNextPage,
     fetchNextPage,
   } = useInfiniteQuery({
-    queryKey: ['posts', userData?.postList],
+    queryKey: ['posts', userData?.uid, userData?.postList, userData],
     queryFn: ({ pageParam }) => fetchPostsData(userData, pageParam as number),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => {

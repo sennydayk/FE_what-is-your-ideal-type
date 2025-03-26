@@ -9,7 +9,7 @@ import { FlexBox } from '../components/ui/flexbox';
 import { Text } from '../components/ui/text';
 import { FirebaseError } from 'firebase/app';
 import FindPasswordModal from '../components/functional/find-password-modal';
-import NavigateToSurvey from '../components/functional/navigate-to-survey-props';
+import NavigateToSurvey from '../components/functional/navigate-to-survey';
 import { loginWithGoogle } from '../services/auth/login-with-google';
 import { loginWithEmail } from '../services/auth/login-with-email';
 import { useForm } from 'react-hook-form';
