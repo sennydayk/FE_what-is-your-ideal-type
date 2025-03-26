@@ -100,7 +100,7 @@ const MyPage = () => {
   }
 
   if (isUserDataLoading || isPostsLoading) {
-    return <div>로딩 중...</div>;
+    return null;
   }
 
   if (userDataError || postsError) {

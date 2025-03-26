@@ -12,6 +12,8 @@ import ErrorBoundary from './components/functional/error-boudary';
 import { LandingRoute } from './components/functional/landing-route';
 import { CookiesProvider } from 'react-cookie';
 import BrowserRedirect from './components/functional/browser-redirect';
+import ScrollToTop from './services/scroll-to-top';
+import Footer from './components/ui/footer';
 
 const Generate = lazy(() => import('./pages/generate'));
 const MyPage = lazy(() => import('./pages/mypage'));
@@ -64,6 +66,7 @@ const App = () => {
           <ErrorBoundary fallback={<div>에러가 발생했습니다.</div>}>
             <Router>
               <BrowserRedirect />
+              <ScrollToTop />
               <Routes>
                 {routes.map(({ path, element, suspense }) => (
                   <Route
@@ -82,6 +85,7 @@ const App = () => {
                 ))}
               </Routes>
             </Router>
+            <Footer />
           </ErrorBoundary>
         </AuthProvider>
       </QueryClientProvider>
