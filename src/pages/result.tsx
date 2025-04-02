@@ -38,6 +38,7 @@ interface PostData {
   profile: string;
   hashTags: string[];
   prompts: string[];
+  revisedPrompt: string;
   userId: string | null;
   email: string | null;
 }
@@ -51,6 +52,7 @@ const Result = () => {
     profile: initialProfile,
     hashTags,
     prompts,
+    revisedPrompt,
   } = location.state || {};
   const [imageUrl, setImageUrl] = useState(tempImageUrl);
   const [profile, setProfile] = useState<ProfileTypes | null>(initialProfile);
@@ -59,53 +61,49 @@ const Result = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
 
-  const isGuest = getGuestMode()
+  const isGuest = getGuestMode();
 
   const MotionLoader = motion.create(Loader2);
 
-  const fetchPostData = useCallback(
-    async (postId: string) => {
-      if (!postId) return;
+  const fetchPostData = useCallback(async (postId: string) => {
+    if (!postId) return;
 
-      try {
-        // posts 컬렉션 먼저 확인
-        let postRef = doc(db, 'posts', postId);
-        let postDoc = await getDoc(postRef);
-        
-        if (postDoc.exists()) {
-          const data = postDoc.data();
-          setImageUrl(data.imageUrl);
-          setProfile(
-            typeof data.profile === 'string'
-              ? JSON.parse(data.profile)
-              : data.profile,
-          );
-          return;
-        }
+    try {
+      // posts 컬렉션 먼저 확인
+      let postRef = doc(db, 'posts', postId);
+      let postDoc = await getDoc(postRef);
 
-        // posts에 없으면 anonymous_posts 확인
-        if (!postDoc.exists()) {
-          postRef = doc(db, 'anonymous_posts', postId);
-          postDoc = await getDoc(postRef);
-          return;
-        } 
-        
-
-        const savedData = localStorage.getItem(`result_${postId}`);
-        if (savedData) {
-          const parsedData = JSON.parse(savedData);
-          setImageUrl(parsedData.tempImageUrl);
-          setProfile(parsedData.profile);
-        } else {
-          setError('데이터를 찾을 수 없습니다.');
-        }
-      } catch (error) {
-        console.error('게시물 데이터 로딩 실패:', error);
-        setError('데이터를 불러오는데 실패했습니다.');
+      if (postDoc.exists()) {
+        const data = postDoc.data();
+        setImageUrl(data.imageUrl);
+        setProfile(
+          typeof data.profile === 'string'
+            ? JSON.parse(data.profile)
+            : data.profile,
+        );
+        return;
       }
-    },
-    [],  
-  );
+
+      // posts에 없으면 anonymous_posts 확인
+      if (!postDoc.exists()) {
+        postRef = doc(db, 'anonymous_posts', postId);
+        postDoc = await getDoc(postRef);
+        return;
+      }
+
+      const savedData = localStorage.getItem(`result_${postId}`);
+      if (savedData) {
+        const parsedData = JSON.parse(savedData);
+        setImageUrl(parsedData.tempImageUrl);
+        setProfile(parsedData.profile);
+      } else {
+        setError('데이터를 찾을 수 없습니다.');
+      }
+    } catch (error) {
+      console.error('게시물 데이터 로딩 실패:', error);
+      setError('데이터를 불러오는데 실패했습니다.');
+    }
+  }, []);
 
   // 초기 데이터 가져오기
   useEffect(() => {
@@ -124,7 +122,9 @@ const Result = () => {
         const actualPostId = postId;
 
         const postsDoc = await getDoc(doc(db, 'posts', actualPostId));
-        const anonymousDoc = await getDoc(doc(db, 'anonymous_posts', actualPostId));
+        const anonymousDoc = await getDoc(
+          doc(db, 'anonymous_posts', actualPostId),
+        );
 
         // 이미 저장된 데이터라면 early return
         if (postsDoc.exists() || anonymousDoc.exists()) {
@@ -151,6 +151,7 @@ const Result = () => {
           profile: profileToSave,
           hashTags: hashTags || [],
           prompts: prompts || [],
+          revisedPrompt: revisedPrompt || '',
           userId: currentUser?.uid || null,
           email: currentUser?.email || null,
         };
@@ -158,7 +159,10 @@ const Result = () => {
         // 컬렉션 결정
         const collectionToUse = isGuest ? 'anonymous_posts' : 'posts';
         await setDoc(doc(db, collectionToUse, actualPostId), postData);
-        console.log('데이터 저장 완료:', { postId: actualPostId, collection: collectionToUse });
+        console.log('데이터 저장 완료:', {
+          postId: actualPostId,
+          collection: collectionToUse,
+        });
 
         // 게스트 모드인 경우 쿠키에 postId 저장
         if (isGuest) {

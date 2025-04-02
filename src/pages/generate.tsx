@@ -50,6 +50,7 @@ const Generate = () => {
             profile: parsedProfile,
             hashTags,
             prompts,
+            revisedPrompt: imageData.usedPrompt,
             postId: newPostId,
             isLoggedIn: !!currentUser,
           },
